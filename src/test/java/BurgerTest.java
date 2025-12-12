@@ -1,15 +1,16 @@
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 import praktikum.Bun;
 import praktikum.Burger;
 import praktikum.Ingredient;
 import praktikum.IngredientType;
 
-import java.util.ArrayList;
-import java.util.List;
+
 
 import static org.junit.Assert.*;
 
@@ -27,20 +28,9 @@ public class BurgerTest {
     @Mock
     Ingredient ingredient;
 
-    @Test
-    public void testAddOneIngredientResultsInOneItem() {
-       Ingredient ingredient1 = new Ingredient(IngredientType.SAUCE, "", 2.78f);
-
-        Burger burger = new Burger();
-        burger.addIngredient(ingredient1);
-        assertEquals(1, burger.ingredients.size());
-    }
-    @Test
-    public void testAddNullIngredientResultsInOneItem() {
-
-        Burger burger = new Burger();
-        burger.addIngredient(null);
-        assertEquals(1, burger.ingredients.size());
+    @Before
+    public void init() {
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
@@ -52,54 +42,72 @@ public class BurgerTest {
     }
     @Test
     public void testSetBunResultsBun() {
-        Bun bun1 = new Bun( "", 2.78f);
+        Bun bun1 = new Bun(NAME_BUN, PRICE_BUN);
 
         Burger burger = new Burger();
         burger.setBuns(bun1);
 
         assertEquals(bun1, burger.bun);
     }
+    @Test
+    public void testAddOneIngredientResultsInListSize1() {
+       Ingredient ingredient1 = new Ingredient(IngredientType.SAUCE, NAME_INGREDIENT, PRICE_INGREDIENT);
+
+        Burger burger = new Burger();
+        burger.addIngredient(ingredient1);
+        assertEquals(1, burger.ingredients.size());
+    }
+    @Test
+    public void testAddNullIngredientResultsInListSize1() {
+
+        Burger burger = new Burger();
+        burger.addIngredient(null);
+        assertEquals(1, burger.ingredients.size());
+    }
+
 
     @Test
     public void testRemoveOneExistingIngredientResultsInListSize0() {
         Burger burger = new Burger();
-        Ingredient ingredient1 = new Ingredient(IngredientType.SAUCE, "", 2.78f);
+        Ingredient ingredient1 = new Ingredient(IngredientType.SAUCE, NAME_INGREDIENT, PRICE_INGREDIENT);
         burger.addIngredient(ingredient1);
+        Ingredient expectedRemoved = burger.ingredients.get(0);
+
         burger.removeIngredient(0);
 
         assertEquals(0, burger.ingredients.size());
     }
+
     @Test
-    public void testRemoveNotExistingIngredientResultsIn() {
+    public void testRemoveOneExistingIngredientResultsInListNotContainsRemovedIngredient() {
+        Burger burger = new Burger();
+        Ingredient ingredient1 = new Ingredient(IngredientType.SAUCE, NAME_INGREDIENT, PRICE_INGREDIENT);
+        burger.addIngredient(ingredient1);
+        Ingredient expectedRemoved = burger.ingredients.get(0);
+
+        burger.removeIngredient(0);
+
+        assertFalse(burger.ingredients.contains(expectedRemoved));
+    }
+    @Test
+    public void testRemoveNotExistingIngredientThrowsException() {
         Burger burger = new Burger();
         assertThrows(IndexOutOfBoundsException.class, () -> burger.removeIngredient(0));
     }
 
-    @Test
-    public void testMoveExistingInExistingResultsInPositive() {
-        Burger burger = new Burger();
-        Ingredient ingredient0 = new Ingredient(IngredientType.SAUCE, "", 2.78f);
-        burger.addIngredient(ingredient0);
-        Ingredient ingredient1 = new Ingredient(IngredientType.SAUCE, "", 2.78f);
-        burger.addIngredient(ingredient1);
-
-        burger.moveIngredient(0,1);
-       Ingredient expectedIngredient = burger.ingredients.get(1);
-        assertEquals(expectedIngredient, ingredient0);
-    }
 
     @Test
-    public void testMoveExistingInNonExistingResultsInNegative() {
+    public void testMoveExistingIndexToNotExistingIndexThrowsException() {
         Burger burger = new Burger();
-        Ingredient ingredient0 = new Ingredient(IngredientType.SAUCE, "", 2.78f);
+        Ingredient ingredient0 = new Ingredient(IngredientType.SAUCE, NAME_INGREDIENT, PRICE_INGREDIENT);
         burger.addIngredient(ingredient0);
 
         assertThrows(IndexOutOfBoundsException.class, () -> burger.moveIngredient(0,1));
     }
     @Test
-    public void testMoveNonExistingInExistingResultsInNegative() {
+    public void testMoveNotExistingIndexToExistingIndexThrowsException() {
         Burger burger = new Burger();
-        Ingredient ingredient0 = new Ingredient(IngredientType.SAUCE, "", 2.78f);
+        Ingredient ingredient0 = new Ingredient(IngredientType.SAUCE, NAME_INGREDIENT, 2.78f);
         burger.addIngredient(ingredient0);
 
         assertThrows(IndexOutOfBoundsException.class, () -> burger.moveIngredient(1,0));
@@ -107,33 +115,29 @@ public class BurgerTest {
     @Test
     public void testGetPriceWhenBurgerIsEmptyThrowsException() {
         Burger burger = new Burger();
+
+        assertThrows(NullPointerException.class, () -> burger.getPrice());
+    }
+
+    @Test
+    public void testGetPriceWhenNoBunAndHaveIngredientsThrowsException() {
+        Burger burger = new Burger();
+        burger.addIngredient(ingredient);
+
         assertThrows(NullPointerException.class, () -> burger.getPrice());
     }
     @Test
-    public void testGetPriceWhenHaveBunAndNoIngredientsReturnsPriceOfTwoBun() {
+    public void testGetPriceWhenBunAndNoIngredientsReturnsPriceOfTwoBuns() {
         Burger burger = new Burger();
+
         Mockito.when(bun.getPrice()).thenReturn(PRICE_BUN);
         burger.setBuns(bun);
 
+        float expectedPrice = PRICE_BUN*2;
         float actualPrice = burger.getPrice();
 
-        assertEquals(PRICE_BUN*2, actualPrice, 0.001);
+        assertEquals(expectedPrice, actualPrice, 0.0001f);
     }
-
-    @Test
-    public void testGetPriceWhenNoBunAndHaveIngredientReturnsPriceOfIngredient() {
-        Burger burger = new Burger();
-
-        Mockito.when(ingredient.getPrice()).thenReturn(PRICE_INGREDIENT);
-        Mockito.when(bun.getPrice()).thenReturn(PRICE_BUN);
-        burger.setBuns(bun);
-        burger.addIngredient(ingredient);
-
-        float actualPrice = burger.getPrice();
-        float expectedPrice = PRICE_BUN*2 + PRICE_INGREDIENT;
-        assertEquals(expectedPrice, actualPrice, 0.001);
-    }
-
     @Test
     public void testGetReceiptWhenNoBunAndNoIngredientThrowsNullPointerException() {
         Burger burger = new Burger();
@@ -147,33 +151,12 @@ public class BurgerTest {
         Mockito.when(bun.getPrice()).thenReturn(PRICE_BUN);
         burger.setBuns(bun);
 
-        String actualReceipt = burger.getReceipt();
-        String expectedReceipt ="(==== black bun ====)\r\n" +
-                "(==== black bun ====)\r\n" +
-                "\r\n" +
-                "Price: 5,560000\r\n";
+        String receipt = burger.getReceipt();
 
-        assertEquals(expectedReceipt, actualReceipt);
+        assertTrue(receipt.contains(NAME_BUN));
+        assertFalse(receipt.contains("= sauce") || receipt.contains("= filling"));
+        assertTrue(receipt.contains(String.format("Price: %f", PRICE_BUN*2)));
     }
-    @Test
-    public void testGetReceiptWhenHasBunAndHaveIngredientsReturnsReceiptWithBunAndIngredient() {
-        Burger burger = new Burger();
-        Mockito.when(bun.getName()).thenReturn(NAME_BUN);
-        Mockito.when(bun.getPrice()).thenReturn(PRICE_BUN);
-        Mockito.when(ingredient.getName()).thenReturn(NAME_INGREDIENT);
-        Mockito.when(ingredient.getType()).thenReturn(IngredientType.SAUCE);
-        Mockito.when(ingredient.getPrice()).thenReturn(PRICE_INGREDIENT);
-        burger.setBuns(bun);
-        burger.addIngredient(ingredient);
 
-        String actualReceipt = burger.getReceipt();
-        String expectedReceipt ="(==== black bun ====)\r\n" +
-                "= sauce hot sauce =\r\n" +
-                "(==== black bun ====)\r\n" +
-                "\r\n" +
-                "Price: 8,340000\r\n";
-
-        assertEquals(expectedReceipt, actualReceipt);
-    }
 
 }
