@@ -12,23 +12,21 @@ import static org.junit.Assert.assertEquals;
 public class BurgerGetPriceParameterizedTest {
 
     private final float bunPrice;
-    private final float ingredient1Price;
-    private final float ingredient2Price;
+    private final float firstIngPrice;
+    private final float secondIngPrice;
     private final float expectedPrice;
 
     public BurgerGetPriceParameterizedTest(
             float bunPrice,
-            float ingredient1Price,
-            float ingredient2Price,
-            float expectedPrice
+            float firstIngPrice, float secondIngPrice, float expectedPrice
     ) {
         this.bunPrice = bunPrice;
-        this.ingredient1Price = ingredient1Price;
-        this.ingredient2Price = ingredient2Price;
+        this.firstIngPrice = firstIngPrice;
+        this.secondIngPrice = secondIngPrice;
         this.expectedPrice = expectedPrice;
     }
 
-    @Parameterized.Parameters(name = "bun={0}, ing1={1}, ing2={2}, total={3}")
+    @Parameterized.Parameters(name = "price of bun={0}, price of firstIngredient={1}, price of secondIngredient={2}, total={3}")
     public static Object[][] getPriceData() {
         return new Object[][]{
                 {2f, 3f, 3f, 2f * 2 + 3f + 3f},
@@ -40,20 +38,20 @@ public class BurgerGetPriceParameterizedTest {
     @Test
     public void testGetPrice() {
         Bun bun = Mockito.mock(Bun.class);
-        Ingredient ing1 = Mockito.mock(Ingredient.class);
-        Ingredient ing2 = Mockito.mock(Ingredient.class);
+        Ingredient firstIngredient = Mockito.mock(Ingredient.class);
+        Ingredient secondIngredient = Mockito.mock(Ingredient.class);
 
         Mockito.when(bun.getPrice()).thenReturn(bunPrice);
 
-        Mockito.when(ing1.getPrice()).thenReturn(ingredient1Price);
+        Mockito.when(firstIngredient.getPrice()).thenReturn(firstIngPrice);
 
-        Mockito.when(ing2.getPrice()).thenReturn(ingredient2Price);
+        Mockito.when(secondIngredient.getPrice()).thenReturn(secondIngPrice);
 
 
         Burger burger = new Burger();
         burger.setBuns(bun);
-        burger.addIngredient(ing1);
-        burger.addIngredient(ing2);
+        burger.addIngredient(firstIngredient);
+        burger.addIngredient(secondIngredient);
 
         float actual = burger.getPrice();
 

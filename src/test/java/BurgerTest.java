@@ -9,7 +9,7 @@ import praktikum.Bun;
 import praktikum.Burger;
 import praktikum.Ingredient;
 import praktikum.IngredientType;
-
+import org.assertj.core.api.SoftAssertions;
 
 
 import static org.junit.Assert.*;
@@ -42,19 +42,19 @@ public class BurgerTest {
     }
     @Test
     public void testSetBunResultsBun() {
-        Bun bun1 = new Bun(NAME_BUN, PRICE_BUN);
+        Bun bun = new Bun(NAME_BUN, PRICE_BUN);
 
         Burger burger = new Burger();
-        burger.setBuns(bun1);
+        burger.setBuns(bun);
 
-        assertEquals(bun1, burger.bun);
+        assertEquals(bun, burger.bun);
     }
     @Test
     public void testAddOneIngredientResultsInListSize1() {
-       Ingredient ingredient1 = new Ingredient(IngredientType.SAUCE, NAME_INGREDIENT, PRICE_INGREDIENT);
+       Ingredient ingredient = new Ingredient(IngredientType.SAUCE, NAME_INGREDIENT, PRICE_INGREDIENT);
 
         Burger burger = new Burger();
-        burger.addIngredient(ingredient1);
+        burger.addIngredient(ingredient);
         assertEquals(1, burger.ingredients.size());
     }
     @Test
@@ -69,8 +69,8 @@ public class BurgerTest {
     @Test
     public void testRemoveOneExistingIngredientResultsInListSize0() {
         Burger burger = new Burger();
-        Ingredient ingredient1 = new Ingredient(IngredientType.SAUCE, NAME_INGREDIENT, PRICE_INGREDIENT);
-        burger.addIngredient(ingredient1);
+        Ingredient ingredient = new Ingredient(IngredientType.SAUCE, NAME_INGREDIENT, PRICE_INGREDIENT);
+        burger.addIngredient(ingredient);
         Ingredient expectedRemoved = burger.ingredients.get(0);
 
         burger.removeIngredient(0);
@@ -81,8 +81,8 @@ public class BurgerTest {
     @Test
     public void testRemoveOneExistingIngredientResultsInListNotContainsRemovedIngredient() {
         Burger burger = new Burger();
-        Ingredient ingredient1 = new Ingredient(IngredientType.SAUCE, NAME_INGREDIENT, PRICE_INGREDIENT);
-        burger.addIngredient(ingredient1);
+        Ingredient ingredient = new Ingredient(IngredientType.SAUCE, NAME_INGREDIENT, PRICE_INGREDIENT);
+        burger.addIngredient(ingredient);
         Ingredient expectedRemoved = burger.ingredients.get(0);
 
         burger.removeIngredient(0);
@@ -99,16 +99,16 @@ public class BurgerTest {
     @Test
     public void testMoveExistingIndexToNotExistingIndexThrowsException() {
         Burger burger = new Burger();
-        Ingredient ingredient0 = new Ingredient(IngredientType.SAUCE, NAME_INGREDIENT, PRICE_INGREDIENT);
-        burger.addIngredient(ingredient0);
+        Ingredient ingredient = new Ingredient(IngredientType.SAUCE, NAME_INGREDIENT, PRICE_INGREDIENT);
+        burger.addIngredient(ingredient);
 
         assertThrows(IndexOutOfBoundsException.class, () -> burger.moveIngredient(0,1));
     }
     @Test
     public void testMoveNotExistingIndexToExistingIndexThrowsException() {
         Burger burger = new Burger();
-        Ingredient ingredient0 = new Ingredient(IngredientType.SAUCE, NAME_INGREDIENT, 2.78f);
-        burger.addIngredient(ingredient0);
+        Ingredient ingredient = new Ingredient(IngredientType.SAUCE, NAME_INGREDIENT, 2.78f);
+        burger.addIngredient(ingredient);
 
         assertThrows(IndexOutOfBoundsException.class, () -> burger.moveIngredient(1,0));
     }
@@ -145,17 +145,24 @@ public class BurgerTest {
     }
 
     @Test
-    public void testGetReceiptWhenHasBunAndNoIngredientsReturnsReceiptWithoutIngredients() {
+    public void testGetReceiptWhenHasBunAndNoIngredientsWithSoftAssertions() {
         Burger burger = new Burger();
         Mockito.when(bun.getName()).thenReturn(NAME_BUN);
         Mockito.when(bun.getPrice()).thenReturn(PRICE_BUN);
         burger.setBuns(bun);
 
         String receipt = burger.getReceipt();
+        SoftAssertions.assertSoftly(softAssertions -> {
 
-        assertTrue(receipt.contains(NAME_BUN));
-        assertFalse(receipt.contains("= sauce") || receipt.contains("= filling"));
-        assertTrue(receipt.contains(String.format("Price: %f", PRICE_BUN*2)));
+            softAssertions.assertThat(receipt)
+                    .contains(NAME_BUN)
+                    .doesNotContain("= sauce")
+                    .doesNotContain("= filling")
+                    .contains(String.format("Price: %f", PRICE_BUN*2));
+
+            softAssertions.assertAll();
+        });
+
     }
 
 
